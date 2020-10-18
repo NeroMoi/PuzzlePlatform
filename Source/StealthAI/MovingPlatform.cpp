@@ -9,11 +9,14 @@ AMovingPlatform::AMovingPlatform()
 
 	//adding mobility
 	SetMobility(EComponentMobility::Movable);
+	
 }
 
 void AMovingPlatform::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TargetLocation = GetActorLocation() + FVector(100, 0, 100);
 
 	if (HasAuthority())// on the server
 	{
@@ -31,7 +34,13 @@ void AMovingPlatform::Tick(float DeltaTime)
 	if (HasAuthority())
 	{
 		FVector Location = GetActorLocation();
-		Location += FVector(Speed*DeltaTime, 0, 0);
+		// GetTransform().TransformPosition(TargetLocation);
+		// set relative location
+		FVector WorldLocation = GetTransform().TransformPosition(TargetLocation);
+		FVector Direction = (WorldLocation - Location).GetSafeNormal();
+		// set absolute position
+		//FVector Direction = (TargetLocation - Location).GetSafeNormal();
+		Location += Speed*DeltaTime*Direction;
 		SetActorLocation(Location);
 	}
 
